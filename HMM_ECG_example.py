@@ -34,6 +34,7 @@ from cardio.models.hmm import HMModel, prepare_hmm_input
 import warnings
 warnings.filterwarnings('ignore')
 
+
 #%% Here are helper functions to generate data for learning, to get values from pipeline, 
 # and to perform calculation of initial parameters of the HMM.
 
@@ -48,7 +49,17 @@ def get_anntypes(batch):
     # anntype_0 = types
     
 def expand_annotation(annsamp_0, anntype_0, length):
-    """Unravel annotation
+    """
+    Unravel annotation
+    
+    anntype_0 and annsamp_0 are with the same size.
+    
+    anntype_0:  contain the actual annotation with strings to indicate what each section of the signal is
+        ['(', 'p', ')', '(', 'N'...]
+    
+    annsamp_0: contain the corresponding index of the annotation in anntype_0
+        ([ 92, 106, 115, 129, 140 ...])
+    
     """
     begin = -1
     end = -1
@@ -57,23 +68,46 @@ def expand_annotation(annsamp_0, anntype_0, length):
     annot_expand = -1 * np.ones(length)
 
     for j, samp in enumerate(annsamp_0):
-        if anntype_0[j] == '(':
-            begin = samp
+        
+        # FOR A NEW ANNOTATION STARTS
+        if anntype_0[j] == '(': # if the annotation starts with "(", that means a new annotation starts
+            begin = samp        # the index that is stored in annsamp_0
+            # Determine what is the label number for this coming new annotation string.
             if (end > 0) & (s != 'none'):
+                              
+                # the previous annotation is 'N', 'N' stands for normal, which is a QRS peak,
+                # so the next section from [end:begin] should be 'st', which is after 'N'
                 if s == 'N':
-                    annot_expand[end:begin] = states['st']
-                elif s == 't':
+                    annot_expand[end:begin] = states['st']               
+                               
+                # the previous annotation is 't'
+                # so the next section from [end:begin] should be 'iso', which is after 't'
+                
+                elif s == 't': # if current string is 't', 
                     annot_expand[end:begin] = states['iso']
-                elif s == 'p':
-                    annot_expand[end:begin] = states['pq']
-        elif anntype_0[j] == ')':
-            end = samp
+                
+                # previous annotation string is 'p', when coming to the if-statement here, the current 
+                # string is '(', and the current index is assigned to 'begin'
+                # previous end index for previous annotation is already stored in 'end'
+                elif s == 'p':                              # since previous annotation string is 'p'
+                    annot_expand[end:begin] = states['pq']  # so between last index 'end', to current index 'begin' is 'pq', which is the next section after 'p'
+       
+        # FOR THE CURRENT ANNOTATION ENDS
+        elif anntype_0[j] == ')':    # if the annotation string is "(", that means the current annotation ends
+            end = samp     # update the index that is stored in annsamp_0
+            # update the last annotation label in this section with the currrent annotation string
             if (begin > 0) & (s != 'none'):
                 annot_expand[begin:end] = states[s]
+        
+       
+        # TAKE THE CURRENT ANNOTATION STRING, which is in between the annotation of '(' and ')'.
         else:
-            s = anntype_0[j]
+            s = anntype_0[j]   # take the current annotation string
+
 
     return annot_expand
+
+
 
 def prepare_means_covars(hmm_features, clustering, states=[3, 5, 11, 14, 17, 19], num_states=19, num_features=3):
     """
@@ -90,7 +124,7 @@ def prepare_means_covars(hmm_features, clustering, states=[3, 5, 11, 14, 17, 19]
     unique_clusters = len(np.unique(clustering)) - 1         # Excluding value -1, which represents undefined state
     for state, cluster in zip(states, np.arange(unique_clusters)):
         value = hmm_features[clustering == cluster, :]       # Get all the values in the features for a particular label (a state)  
-                                                             #      values has a size of (N, 3), N is the number of examples find within this cluster
+                                                             #      values has a size of (N, 3), N is the number of examples found within this cluster
                                                              #      3 is the number of features
         means[last_state:state, :] = np.mean(value, axis=0)  # Got a particular state, average all the values within a feature, and store them in the "mean" matrix
                                                              #      np.mean(value, axis=0) has a size of (1, 3), 3 is the number of features
@@ -140,6 +174,7 @@ dtst  = bf.Dataset(index,
                                           # EcgBatch defines how ECGs are stored and includes actions for ECG processing.
 dtst.split(0.9)  # dataset can be split into training and testing
 
+dtst.index()
 
 # Join various path components  
 #print(os.path.join(path, "/home", "file.txt")) 
@@ -158,7 +193,10 @@ template_ppl_inits = (
       
       .load(       # this is coming from ECGBatch
             fmt='wfdb',        # (optional), source format
-            components=["signal", "annotation", "meta"], # (str or array like) components to load
+            components=["signal",      # from ECGBatch class, store ECG signals in numpy array
+                        "annotation",  # from ECGBatch class, array of dicts with different types of annotations, e.g. array of R-peaks
+                        "meta"],       # from ECGBatch class, array of dicts with metadata about ECG records, e.g. signal frequency
+                        # (str or array like) components to load
             ann_ext='pu1')     # (str, optional), extension of the annotation file
             
       .cwt(        # conduct continous wavelet transform to the signal
@@ -186,6 +224,7 @@ template_ppl_inits = (
                        bf.B("hmm_features"),  # batch component,  at each iteration B('features') and B('labels') will be replaced with
                                               # 'current_batch.features' and 'current_batch.labels'
                        mode='e')              # mode 'e' extend a variable with new value, if a variable is a list 
+                       
       .run(  # coming from pipeline
            batch_size=20,    # number of items in the batch
            shuffle=False,    # no conduct random shuffle
@@ -197,6 +236,8 @@ template_ppl_inits = (
 ppl_inits = (dtst >> template_ppl_inits).run() # pass dataset to pipeline and run
 
 
+
+      
 '''
 Next, we get values from pipeline variables and perform calculation of 
 the models' initial parameters: means, covariances, transition matrix and initial probabilities.
@@ -208,7 +249,7 @@ hmm_features = np.concatenate([hmm_features[0,:,:].T for hmm_features in ppl_ini
 #   for each element in this list, it has a size of (2,3,225000)
 #       not sure what 2 is ,  
 #       3 probably means the scales=[4,8,16] in wavelets data, 
-#       225000 may means the time points for this single ECG recording, 15 min long, exacted data points might change for each file in the list
+#       225000 may means the time points for this single ECG recording, 15 min long (fs=250 Hz), exacted data points might change for each file in the list
 #   for some reason??? the program here only concatenate the first dimesion of this data [hmm_features[0,:,:], don't know why.
 
 '''
@@ -223,9 +264,14 @@ plt.plot(hi[1,2,:])
 
 
 anntype = ppl_inits.get_variable("anntypes")  # return the variable value
+    # anntype, is a list with a length of 105, 
+    #  within anntype, each list has signs of patenthesis and annotation characters,
+    #  the length is different in each list, i.e. 10616. 
+
 annsamp = ppl_inits.get_variable("annsamps")
-
-
+    # annsamp, is a list with a length of 105
+    #  within annsamp, each list has the location of index, 
+    #  it looks like this should be used together with the information in parameter 'anntype'
 
 '''
 After this, we expand the annotation with helper function so that each observation has it's own label: 
@@ -246,6 +292,7 @@ means, covariances = prepare_means_covars(hmm_features, expanded, states = [3, 5
 transition_matrix, start_probabilities = prepare_transmat_startprob()
 # transition_matrix,   size of (num of states, num of states), transition prob between one state to another
 # start_probabilities, size of (num of states, 1), initial prob of each state
+
 
 #%%
 # TRAINING, using GaussianHMM()
@@ -307,7 +354,7 @@ ppl_train_template = (
                    make_data=partial(  # partial is a python function to allow us to fix a certain number of arguments of a function and generate a new function
                                      prepare_hmm_input,        # the function that partial() is going to generate, with its using parameter in the following
                                      features="hmm_features", 
-                                     channel_ix=0))
+                                     channel_ix=0))       # from 'Source code for cardio.models.hmm.hmm', index of channel, which data should be used in training and predicting
       .run(batch_size=20, shuffle=False, drop_last=False, n_epochs=1, lazy=True)
 )
 
@@ -341,7 +388,7 @@ Update of the variable
 
 template_ppl_predict = (
     bf.Pipeline()
-      .init_model("static", HMModel, "HMM", config=config_predict)
+      .init_model("static", HMModel, "HMM", config=config_predict)   # indicate that we want to load the pre-trained model
       .load(fmt="wfdb", components=["signal", "annotation", "meta"], ann_ext="pu1")
       .cwt(src="signal", dst="hmm_features", scales=[4,8,16], wavelet="mexh")
       .standardize(axis=-1, src="hmm_features", dst="hmm_features")
@@ -364,11 +411,62 @@ batch = ppl_predict.next_batch()
 
 example_1 = 5
 example_2 = 9
-
-batch.show_ecg(batch.indices[example_1], 5, 10, "hmm_annotation")
+# plot an ECG signal, optionally highlight QRS complexes along with P and T waves.
+# Each channel is displayed on a separate subplot.
+# source code for show_ecg()
+# https://analysiscenter.github.io/cardio/_modules/cardio/core/ecg_batch.html#EcgBatch.show_ecg
+batch.show_ecg(batch.indices[example_1],   # index, index of a signal to plot
+               5,                 # the start point of the displayed part of the signal, in seconds
+               10,                # the end point of the displayed part of the signal, in seconds 
+               "hmm_annotation")  # specifies attribtute that stores annotation obtained from cardio.models.HMModel
 print("Heart rate: %d bpm" %batch.meta[example_1]["hr"])
 
 
 batch.show_ecg(batch.indices[example_2], 0, 5, "hmm_annotation")
 print("Heart rate: %d bpm" %batch.meta[example_2]["hr"])
+
+
+
+#%%
+
+# extract the raw recording of the signal
+mysig= batch.signal[example_1]  # get the first example within this batch,
+                        # a single exmaple has two channels of recording, they are the same length
+
+myfeature = batch.hmm_features[example_1]  # get the features of the first example
+
+end_point  = 10000 # end point of the signal choose to display
+plt.figure()
+plt.subplot(3,1,1)
+plt.plot(mysig[0, 0:end_point])  # look at the first channel of recording, 0 to 2500 points
+plt.xlim([0, end_point])
+
+# look at the feature from the hmm_feature
+plt.subplot(3,1,2)
+plt.imshow(myfeature[0], aspect='auto', extent = [0 , end_point,  1, 3], cmap='RdBu')
+plt.ylim([1,3])
+
+
+import pywt
+fs=250
+
+#%
+length = len(mysig)
+scales = np.arange(1, 20)
+# continuous wavelet transform, return: 
+#   features, are the wavelet transform coefficients, 
+#   freq,     is the corresponding frequency for each scale.
+dt = 1/fs
+
+# try to use the same scales as what the hmm_features uses
+features, frq = pywt.cwt(mysig, scales = [4,8,16], wavelet='mexh', sampling_period=dt)
+frequencies = pywt.scale2frequency('mexh', [1]) / dt
+
+plt.subplot(3,1,3)
+plt.imshow(features[:, 0:end_point], aspect='auto', extent =  [0 , end_point,  1, 3], cmap='RdBu')
+plt.show()
+plt.xlabel('ms')
+plt.ylabel('Frequency (To be adjusted)')
+
+
 
