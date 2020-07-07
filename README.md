@@ -10,3 +10,5 @@ It might contain .py files or .ipynb files.
 * This folder has study example and note of using tensorflow lite. It is related how some machine learning model can be implemented on a microcontroller. 
  
  
+## "hmmmodel.dill" file 
+* this file is hmm model trained from the "HMM_ECG_example.py" file. It can be used next time to conduct the prediction, instead of train the data again. 
