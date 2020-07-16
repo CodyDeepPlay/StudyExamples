@@ -3,7 +3,7 @@
 * It might contain .py files or .ipynb files. 
 
 ## "qt-database-1.0.0.zip" 
-* This ip file contains some ECG data sets downloaded from Physionet data base, 			 https://www.physionet.org/content/qtdb/1.0.0/
+* This zip file contains some ECG data sets downloaded from Physionet data base, 			 https://www.physionet.org/content/qtdb/1.0.0/
   It contains information about EMG annotation, segmentation, classification, etc.
 
 ## "ECG_data_annatation.ipynb" 
