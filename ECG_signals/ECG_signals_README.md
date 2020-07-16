@@ -13,4 +13,27 @@
 * This file shows an example of how to use an lstm based deep learning framwork to conduct ECG signal annotation. 
 folder 'lstm_seg_raw20200710-1533' contrained a pre-trained model, this is a lstm based simple deep learning model.
 One can use the pre-trained model to conduct ECG segmentation.
+
+Below is the mode information
+
+Model: "sequential_4"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+lstm_4 (LSTM)                (None, 140, 250)          252000    
+_________________________________________________________________
+dropout_4 (Dropout)          (None, 140, 250)          0         
+_________________________________________________________________
+batch_normalization_4 (Batch (None, 140, 250)          1000      
+_________________________________________________________________
+dense_4 (Dense)              (None, 140, 6)            1506      
+=================================================================
+Total params: 254,506
+Trainable params: 254,006
+Non-trainable params: 500
+_________________________________________________________________
  
+ 
+ Here is an example of true signal and its predicted segmentation. 
+ 
+ ![Alt text](relative/path/to/ECG_lstm_seg.png?raw=true "Title")
