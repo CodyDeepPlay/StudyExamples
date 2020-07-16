@@ -11,4 +11,6 @@
  
 ## "ECG_segmentation.py" 
 * This file shows an example of how to use an lstm based deep learning framwork to conduct ECG signal annotation. 
+folder 'lstm_seg_raw20200710-1533' contrained a pre-trained model, this is a lstm based simple deep learning model.
+One can use the pre-trained model to conduct ECG segmentation.
  
