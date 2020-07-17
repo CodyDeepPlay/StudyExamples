@@ -36,4 +36,4 @@ _________________________________________________________________
  
  Here is an example of true signal and its predicted segmentation. 
  
- ![predicted segmentation](Capture.PNG)
+ ![predicted segmentation](https://github.com/CodyDeepPlay/StudyExamples/blob/master/ECG_signals/data_folder.JPG)
