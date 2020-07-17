@@ -16,24 +16,10 @@ One can use the pre-trained model to conduct ECG segmentation.
 
 Below is the mode information
 
-Model: "sequential_4"
-_________________________________________________________________
-Layer (type)                 Output Shape              Param #   
------------------------------------------------------------------
-lstm_4 (LSTM)                (None, 140, 250)          252000    
-_________________________________________________________________
-dropout_4 (Dropout)          (None, 140, 250)          0         
-_________________________________________________________________
-batch_normalization_4 (Batch (None, 140, 250)          1000      
-_________________________________________________________________
-dense_4 (Dense)              (None, 140, 6)            1506      
------------------------------------------------------------------
-Total params: 254,506
-Trainable params: 254,006
-Non-trainable params: 500
+ ![example model](https://github.com/CodyDeepPlay/StudyExamples/blob/master/ECG_signals/ExampleModel.PNG)
 _________________________________________________________________
  
  
  Here is an example of true signal and its predicted segmentation. 
  
- ![predicted segmentation](https://github.com/CodyDeepPlay/StudyExamples/blob/master/ECG_signals/data_folder.JPG)
+ ![predicted segmentation](https://github.com/CodyDeepPlay/StudyExamples/blob/master/ECG_signals/ECG_lstm_seg.png)
