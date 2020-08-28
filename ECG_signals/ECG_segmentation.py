@@ -408,6 +408,15 @@ if SAVE_MODEL:
     new_folder = 'lstm_seg_'+ feature+dateinfo[0:4] +  dateinfo[5:7]+ dateinfo[8:10] + '-' + dateinfo[11:13] + dateinfo[14:16]
     
     filepath = directory + '\\' + new_folder +'\\'  # create a new folder each time for new training
+    
+    
+    '''
+    
+    filepath = os.getcwd() + '\\lstm_seg_raw20200710-1533'
+    
+    '''
+    
+    
     tf.saved_model.save(model, filepath)  # this will create a folder and save models there
 
 
