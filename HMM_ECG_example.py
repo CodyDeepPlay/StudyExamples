@@ -35,6 +35,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
+
 #%% Here are helper functions to generate data for learning, to get values from pipeline, 
 # and to perform calculation of initial parameters of the HMM.
 
@@ -82,7 +83,6 @@ def expand_annotation(annsamp_0, anntype_0, length):
                                
                 # the previous annotation is 't'
                 # so the next section from [end:begin] should be 'iso', which is after 't'
-                
                 elif s == 't': # if current string is 't', 
                     annot_expand[end:begin] = states['iso']
                 
@@ -174,7 +174,7 @@ dtst  = bf.Dataset(index,
                                           # EcgBatch defines how ECGs are stored and includes actions for ECG processing.
 dtst.split(0.9)  # dataset can be split into training and testing
 
-dtst.index()
+#dtst.index()
 
 # Join various path components  
 #print(os.path.join(path, "/home", "file.txt")) 
@@ -187,6 +187,7 @@ we need for initial parameters in pipeline variables:
 '''
 template_ppl_inits = (
     bf.Pipeline()  # refer pipeline API for more information
+                   # https://analysiscenter.github.io/batchflow/api/batchflow.pipeline.html
       .init_variable("annsamps", init_on_each_run=list) # create a variable if not exists, before each run, initiate it a list, a method in Pipeline class
       .init_variable("anntypes", init_on_each_run=list)
       .init_variable("hmm_features", init_on_each_run=list)
@@ -274,8 +275,13 @@ annsamp = ppl_inits.get_variable("annsamps")
     #  it looks like this should be used together with the information in parameter 'anntype'
 
 '''
-After this, we expand the annotation with helper function so that each observation has it's own label: 
-0 for QRS complex, 1 for ST segment, 2 for T-wave, 3 for ISO segment, 4 for P-wave, 5 for PQ segment and -1 for all other observations.
+After this, we expand the annotation with helper function so that each observation has its own label: 
+    0 for QRS complex, 
+    1 for ST segment, 
+    2 for T-wave, 
+    3 for ISO segment, 
+    4 for P-wave, 
+    5 for PQ segment and -1 for all other observations.
 '''
 expanded = np.concatenate([expand_annotation(samp, types, length) for samp, types, length in zip(annsamp, anntype, lengths)])
 # expanded is the annotation of each data points in the signal, hmm_features.

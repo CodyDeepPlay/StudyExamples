@@ -9,19 +9,28 @@ how to use a stop button to stop a task in the tkinter GUI
 
 from tkinter import *
 
-running = True  # Global flag
+running = False  # Global flag
+n=0
 
 def scanning():
     if running:  # Only do this if the Stop button has not been clicked
-        print ("hello")
-
+        #   print ("hello")
+        
+        global n
+        print(n+1)
+        n +=1
     # After 1 second, call scanning again (create a recursive loop)
-    root.after(10, scanning)
+    root.after(1, scanning)
+    
+
 
 def start():
     """Enable scanning by setting the global flag to True."""
     global running
     running = True
+    
+    global n
+    n=0
 
 def stop():
     """Stop scanning by setting the global flag to False."""
@@ -43,3 +52,7 @@ stop.grid()
 
 root.after(10, scanning)  # After 1 second, call scanning
 root.mainloop()
+
+
+
+
