@@ -55,7 +55,7 @@ if this substring is not in my string, it will return -1
 ##########################################################################
 
 # this requires you to have 'xlrd==1.2.0'
-# has not test if other newer version of 'xlrd' will work or not
+# has not tested if other newer version of 'xlrd' will work or not
 df = pd.read_excel(filename, sheet_name=sheet_name)
 
 
