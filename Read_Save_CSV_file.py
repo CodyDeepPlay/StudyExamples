@@ -45,8 +45,34 @@ keys  = df.keys()            # get all the keys
 """
 if this substring is not in my string, it will return -1
 """
-
 (myfilename.find("findMyString") != -1) 
+
+
+
+
+##########################################################################
+######### Example of opening a .xlxs file, and read data from it  ########
+##########################################################################
+
+# this requires you to have 'xlrd==1.2.0'
+# has not test if other newer version of 'xlrd' will work or not
+df = pd.read_excel(filename, sheet_name=sheet_name)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
