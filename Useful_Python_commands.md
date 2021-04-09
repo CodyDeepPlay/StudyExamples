@@ -18,13 +18,13 @@ This command should return 'True' or 'False' in the console. 'True' means CUDA s
 
 * Then, make sure GPU is available for Tensorflow to use.
 
-Next, we want to confirm that the GPU is available to Tensorflow, use a built-in utility function in Tensorflow:
+Next, we want to confirm that the GPU is available to Tensorflow, use a built-in utility function in Tensorflow (tf version =1.8.0):
 ```python
 tf.test.is_gpu_available(cuda_only=False, min_cuda_compute_capability=None)
 ```
 This command will return 'True' or 'False'. 'True' means the GPU is available for Tensorflow to use. 
 
-* For a newer version of TF, the command to check GPU is available is different.
+* For a NEWER version of TF, the command to check GPU is available is different.
 
 You might need to use the following command if your Tensorflow is with a newer version:
 ```python
