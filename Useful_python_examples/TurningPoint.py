@@ -34,7 +34,7 @@ def DetectTurning(mysignal, turning_type = 'both', first=False, vis=False):
         vis: 
             if True, will plot a figure
     '''
-
+    turning_list = []
     # starting from 2, 
     # because the 1st and 0th data point shows the sign (moving trend) of a section of curve
     # the 1st and 2nd data point show the sign (moving trend) of the next section of the curve.
