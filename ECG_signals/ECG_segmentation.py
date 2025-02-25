@@ -7,6 +7,7 @@ Created on Fri Jul 10 10:06:58 2020
 ECG data segmentation
 """
 
+# cardio module: https://github.com/analysiscenter/cardio/tree/master
 
 import os, sys
 import cardio.batchflow as bf   # the old 'cardio.dataset' has been renamed to this 'cardio.batchflow'
