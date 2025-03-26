@@ -133,8 +133,6 @@ data = {
                               'explain': 'original annoation symbol for all recordings files'},
 }
 
-#%%
-
 
 #%%
 # File name for the pickle file
@@ -182,10 +180,10 @@ except Exception as e:
 
 #%%  save all long ECG file into smaller/individual ECG files
 
-all_ECG_data = loaded_data['ECG']['data']
-all_annotation_expand = loaded_data['All_annotation']['data']
-All_annotation_sample = loaded_data['All_annotation_sample']['data']
-All_annotation_symbol = loaded_data['All_annotation_symbol']['data']
+all_ECG_data = long_EKG['ECG']['data']
+all_annotation_expand = long_EKG['All_annotation']['data']
+All_annotation_sample = long_EKG['All_annotation_sample']['data']
+All_annotation_symbol = long_EKG['All_annotation_symbol']['data']
 
 
 n = len(all_ECG_data) # the total number of ECG recording files
@@ -245,7 +243,7 @@ filename = "individual_EKG_recording.pkl"
 file_path = os.path.join("data", filename)
 
 
-hf.save_and_split_pickle(ECG_data, file_path, max_size_mb=45)
+# hf.save_and_split_pickle(ECG_data, file_path, max_size_mb=45)
 long_EKG = hf.load_and_combine_pickle(file_path)
 
 #%%

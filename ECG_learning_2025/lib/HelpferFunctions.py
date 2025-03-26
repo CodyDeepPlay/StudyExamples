@@ -143,7 +143,7 @@ def seg_single_ECGs(my_signal, one_anntype, one_annsamp, one_expand):
 
 #%%
 # save large file into smaller pickle file, with a required size
-def save_and_split_pickle(data, base_filename, max_size_mb=99):
+def save_and_split_pickle(data, base_filename, max_size_mb=45):
     """
     Saves a Python object to pickle files, splitting it if it exceeds a maximum size.
 
