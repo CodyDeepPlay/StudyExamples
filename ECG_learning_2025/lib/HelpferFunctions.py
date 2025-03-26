@@ -11,8 +11,8 @@ host helper functions
 """
 
 import numpy as np
-
-
+import pickle
+import os
 #%%
 
 '''
@@ -141,4 +141,92 @@ def seg_single_ECGs(my_signal, one_anntype, one_annsamp, one_expand):
 
 
 
+#%%
+# save large file into smaller pickle file, with a required size
+def save_and_split_pickle(data, base_filename, max_size_mb=99):
+    """
+    Saves a Python object to pickle files, splitting it if it exceeds a maximum size.
+
+    Args:
+        data: The Python object to save.
+        base_filename: The base filename for the pickle files (e.g., "my_data").
+        max_size_mb: The maximum size of each pickle file in megabytes.
+    """
+    max_size_bytes = max_size_mb * 1024 * 1024  # Convert MB to bytes
+
+    try:
+        serialized_data = pickle.dumps(data)
+    except pickle.PicklingError as e:
+        print(f"Error pickling data: {e}")
+        return
+
+    data_size = len(serialized_data)
+
+    if data_size <= max_size_bytes:
+        # Save as a single file
+        with open(f"{base_filename}.pkl", "wb") as f:
+            f.write(serialized_data)
+        print(f"Saved {base_filename}.pkl ({data_size / (1024 * 1024):.2f} MB)")
+    else:
+        # Split into multiple files
+        num_files = (data_size + max_size_bytes - 1) // max_size_bytes  # Ceiling division
+        for i in range(num_files):
+            start = i * max_size_bytes
+            end = min((i + 1) * max_size_bytes, data_size)
+            chunk = serialized_data[start:end]
+
+            filename = f"{base_filename}_{i + 1}.pkl"
+            with open(filename, "wb") as f:
+                f.write(chunk)
+            print(f"Saved {filename} ({len(chunk) / (1024 * 1024):.2f} MB)")
+
+
+
+# load the individual data files and combine them into an original bigger file
+def load_and_combine_pickle(base_filename):
+    """
+    Loads and combines multiple pickle files (created by save_and_split_pickle)
+    back into a single Python object.
+
+    Args:
+        base_filename: The base filename of the pickle files (e.g., "my_data").
+
+    Returns:
+        The combined Python object, or None if an error occurs.
+    """
+    combined_data = b""  # Initialize as empty bytes
+
+    i = 1
+    while True:
+        filename = f"{base_filename}_{i}.pkl"
+        if not os.path.exists(filename) and i == 1:
+            filename = f"{base_filename}.pkl"
+            if not os.path.exists(filename):
+                print(f"File {base_filename} or {base_filename}_1.pkl not found.")
+                return None
+            try:
+                with open(filename, "rb") as f:
+                    combined_data = f.read()
+                break
+            
+            except FileNotFoundError:
+                print(f"File {filename} not found.")
+
+        elif not os.path.exists(filename):
+            break
+
+        try:
+            with open(filename, "rb") as f:
+                combined_data += f.read()
+        except FileNotFoundError:
+            print(f"File {filename} not found.")
+            return None
+        i += 1
+
+    try:
+        data = pickle.loads(combined_data)
+        return data
+    except pickle.UnpicklingError as e:
+        print(f"Error unpickling data: {e}")
+        return None
 
